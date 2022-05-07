@@ -61,7 +61,7 @@ const PokemonCard: FC<{ pokemon: pokemonType; vote: () => void }> = (props) => {
       />
       <p className="text-center text-xl capitalize">{props.pokemon.name}</p>
       <button
-        className="p-1 px-2 rounded bg-orange-300 mt-1 w-fit"
+        className="p-1 px-2 rounded bg-red-900 mt-1 w-fit"
         onClick={props.vote}
       >
         Rounder
