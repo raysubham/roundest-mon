@@ -1,4 +1,4 @@
-const MAX_NUMBER = 5465;
+const MAX_NUMBER = 499;
 
 const getRandomPokemonId: (skipId?: number) => number = (skipId) => {
   const randomId = Math.floor(Math.random() * MAX_NUMBER) + 1;
@@ -13,5 +13,5 @@ export const getOptionsForVote = () => {
   const firstId = getRandomPokemonId();
   const secondId = getRandomPokemonId(firstId);
 
-  return [firstId, secondId];
+  return { firstId, secondId };
 };

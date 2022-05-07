@@ -1,28 +1,71 @@
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { FC, useState } from "react";
+import { trpc } from "../lib/trpc";
 import { getOptionsForVote } from "../utils/getRandomPokemon";
+import { InferQueryOutput } from "./api/trpc/[trpc]";
 
-interface IOptions {
-  firstId: number;
-  secondId: number;
-}
+type pokemonType = InferQueryOutput<"get-pokemon-by-id">;
 
 const Home: NextPage = () => {
-  const [options, setOptions] = useState<IOptions>();
+  const [{ firstId, secondId }, setOptions] = useState(() =>
+    getOptionsForVote()
+  );
 
-  useEffect(() => {
-    const [firstId, secondId] = getOptionsForVote();
-    setOptions({ firstId, secondId });
-  }, []);
+  const firstPokemonQuery = trpc.useQuery([
+    "get-pokemon-by-id",
+    { id: firstId },
+  ]);
+  const secondPokemonQuery = trpc.useQuery([
+    "get-pokemon-by-id",
+    { id: secondId },
+  ]);
+
+  const voteForPokemon = (pokemonId: number) => {
+    console.log(pokemonId);
+  };
+
+  if (firstPokemonQuery.isLoading || secondPokemonQuery.isLoading)
+    return <div>Loading...</div>;
 
   return (
     <div className="h-screen w-screen flex flex-col justify-center">
       <div className="text2xl text-center">Which Pokemon is the roundest?</div>
       <div className="max-w-2xl mt-4 mx-auto p-8 border rounded flex justify-between items-center gap-2">
-        <div className="p-2 px-4 border">{options?.firstId}</div>
-        <p>vs</p>
-        <div className="p-2 px-4 border">{options?.secondId}</div>
+        {!firstPokemonQuery.isLoading &&
+          firstPokemonQuery.data &&
+          !secondPokemonQuery.isLoading &&
+          secondPokemonQuery.data && (
+            <>
+              <PokemonCard
+                pokemon={firstPokemonQuery.data}
+                vote={() => voteForPokemon(firstId)}
+              />
+              <p>vs</p>
+              <PokemonCard
+                pokemon={secondPokemonQuery.data}
+                vote={() => voteForPokemon(secondId)}
+              />
+            </>
+          )}
       </div>
+    </div>
+  );
+};
+
+const PokemonCard: FC<{ pokemon: pokemonType; vote: () => void }> = (props) => {
+  return (
+    <div className="w-64 h-80 object-fill flex flex-col items-center">
+      <img
+        src={props.pokemon.sprites.front_default as string}
+        className="w-full"
+      />
+      <p className="text-center text-xl capitalize">{props.pokemon.name}</p>
+      <button
+        className="p-1 px-2 rounded bg-orange-300 mt-1 w-fit"
+        onClick={props.vote}
+      >
+        Rounder
+      </button>
     </div>
   );
 };
